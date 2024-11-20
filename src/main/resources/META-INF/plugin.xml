@@ -1,0 +1,161 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+  <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+  <id>org.byaicodereview.ai_cr_plugin</id>
+
+  <!-- Public plugin name should be written in Title Case.
+       Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+  <name>By AI Code Review</name>
+
+  <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+  <vendor email="colo.cai.2024@gmail.com" url="">By AI Code Review</vendor>
+
+  <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+       Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+       Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+  <description><![CDATA[
+    <h3>An AI-powered code review assistant based on large language models that helps developers improve code quality.</h3>
+    <h3>一款基于AI大模型的代码CR助手，具体文档请参考文档（lark 搜索云文档：AI Code 插件, 或加入【AI-Code 插件使用反馈群】进行反馈)。</h3>
+  ]]></description>
+
+  <change-notes><![CDATA[
+    <h3>版本 1.0.3 （2024-11-18）</h3>
+    <h4>功能</h4>
+    <ul>
+      <li>可直接与大模型进行提问</li>
+      <li>支持代码解释</li>
+      <li>支持代码优化建议</li>
+      <li>支持代码生成注释</li>
+      <li>支持代码生成单元测试建议</li>
+    </ul>
+  ]]></change-notes>
+
+
+  <!-- Product and plugin compatibility requirements.
+       Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+  <depends>com.intellij.modules.platform</depends>
+<!--  <depends optional="true">com.intellij.modules.java</depends>-->
+<!--  <depends optional="true">com.intellij.modules.python</depends>-->
+<!--  <depends optional="true">com.intellij.modules.go</depends>-->
+
+  <!-- Extension points defined by the plugin.
+       Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+  <extensions defaultExtensionNs="com.intellij">
+    <toolWindow id="ToolwindowPanel" secondary="true" icon="/META-INF/pluginIcon.svg" anchor="right"
+                factoryClass="org.example.ai_cr_plugin.ToolWindowPanelFactory"/>
+
+<!--    &lt;!&ndash; <editorNotificationProvider implementation="org.example.ai_cr_plugin.EditorBanner"/> &ndash;&gt;-->
+<!--&lt;!&ndash;    <codeInsight.lineMarkerProvider&ndash;&gt;-->
+<!--&lt;!&ndash;      language="JAVA"&ndash;&gt;-->
+<!--&lt;!&ndash;      implementationClass="org.example.ai_cr_plugin.FunctionButtonProvider"/>&ndash;&gt;-->
+
+    <codeInsight.inlayProvider
+      language="JAVA"
+      implementationClass="org.example.ai_cr_plugin.OptionsInlayHintsProvider"/>
+
+    <codeInsight.inlayProvider
+        language="Python"
+        implementationClass="org.example.ai_cr_plugin.OptionsInlayHintsProvider"/>
+
+    <codeInsight.inlayProvider
+        language="go"
+        implementationClass="org.example.ai_cr_plugin.OptionsInlayHintsProvider"/>
+
+    <codeInsight.inlayProvider
+        language="ObjectiveC"
+        implementationClass="org.example.ai_cr_plugin.OptionsInlayHintsProvider"/>
+
+    <codeInsight.inlayProvider
+      language="JavaScript"
+      implementationClass="org.example.ai_cr_plugin.OptionsInlayHintsProvider"/>
+
+    <codeInsight.inlayProvider
+      language="Dart"
+      implementationClass="org.example.ai_cr_plugin.OptionsInlayHintsProvider"/>
+
+  </extensions>
+
+  <actions>
+    <group id="ProjectPopupMenuAction" text="By AI Code Review" popup="true">
+      <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+
+      <action id="ProjectPopupCodeExplain" class="org.example.ai_cr_plugin.ProjectPopupMenuAction"
+              text="Explain File"
+              description="AI explains the code in the current file">
+      </action>
+
+      <action id="ProjectPopupCodeImprove" class="org.example.ai_cr_plugin.ProjectPopupMenuAction"
+              text="Improve File"
+              description="AI improves the code in the current file">
+      </action>
+
+      <action id="ProjectPopupCodeDocstring" class="org.example.ai_cr_plugin.ProjectPopupMenuAction"
+              text="Write Docstring For File"
+              description="AI writes docstring for the code in the current file">
+      </action>
+
+      <action id="ProjectPopupCodeTest" class="org.example.ai_cr_plugin.ProjectPopupMenuAction"
+              text="Generate UnitTests For File"
+              description="AI generates unit tests for the code in the current file">
+      </action>
+    </group>
+
+    <group id="EditorPopupMenuAction" text="By AI Code Review" popup="true">
+      <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+<!--      <action id="EditorPopupMenuCodeReview" class="org.example.ai_cr_plugin.EditorPopupFileReviewAction"-->
+<!--              text="Review This File Or Selected Code"-->
+<!--      >-->
+<!--      </action>-->
+<!--      <action id="EditorPopupDiffReviewAction" class="org.example.ai_cr_plugin.EditorPopupDiffReviewAction"-->
+<!--              text="Review Changes Since Last Commit"-->
+<!--      >-->
+<!--      </action>-->
+      <action id="EditorPopupCodeImprove" class="org.example.ai_cr_plugin.EditorPopupCodeAction"
+              text="Explain Code"
+              description="AI explains the code in the current file or selection">
+      </action>
+
+      <action id="EditorPopupCodeExplain" class="org.example.ai_cr_plugin.EditorPopupCodeAction"
+              text="Improve Code"
+              description="AI improves the code in the current file or selection">
+      </action>
+
+      <action id="EditorPopupCodeDocstring" class="org.example.ai_cr_plugin.EditorPopupCodeAction"
+              text="Write Docstring For Code"
+              description="AI writes docstring for the code in the current file or selection">
+      </action>
+
+      <action id="EditorPopupCodeTest" class="org.example.ai_cr_plugin.EditorPopupCodeAction"
+              text="Generate UnitTests For Code"
+              description="AI generates unit tests for the code in the current file or selection">
+      >
+      </action>
+    </group>
+
+    <group id="org.example.ai_cr_plugin.SettingsGroup" text="AI Code Review"
+           description="AI Code Review settings">
+        <add-to-group group-id="ToolsMenu" anchor="last"/>
+
+        <group id="EnvironmentGroup" text="Switch Environment" popup="true">
+            <action id="SwitchToDevelopmentAction"
+                    class="org.example.ai_cr_plugin.settings.SwitchEnvironmentAction"
+                    text="Switch to Development"
+                    description="Switch to development environment"/>
+
+            <action id="SwitchToProductionAction"
+                    class="org.example.ai_cr_plugin.settings.SwitchEnvironmentAction"
+                    text="Switch to Production"
+                    description="Switch to production environment"/>
+        </group>
+
+        <separator/>
+
+        <action id="ShowSettingsAction"
+                class="org.example.ai_cr_plugin.settings.ShowSettingsAction"
+                text="Settings"
+                description="Configure AI Code Review settings"/>
+    </group>
+  </actions>
+
+
+</idea-plugin>

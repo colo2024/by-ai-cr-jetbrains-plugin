@@ -1,0 +1,41 @@
+# IntelliJ Platform 插件特有的文件
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.idea_modules/
+
+# Gradle 相关
+.gradle/
+build/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletasknamecache
+
+# 编译输出
+classes/
+target/
+
+# 日志文件
+*.log
+
+# 操作系统相关
+.DS_Store
+Thumbs.db
+
+# 插件开发相关
+sandbox/
+
+# 本地配置文件
+local.properties
+
+# 插件发布相关
+*.zip
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# 临时文件
+*~
+.*.swp
+.*.swo

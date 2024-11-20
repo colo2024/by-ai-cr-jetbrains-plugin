@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CR Demo</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    html,
+    body {
+      width: 100dvw;
+      height: 100dvh;
+      background: rgb(30, 30, 30);
+      overflow: hidden;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      background: rgb(30, 30, 30);
+      border: 1px solid #282c34;
+    }
+
+    #welcome {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+      font-size: 12px;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .loading {
+      width: 40px;
+      height: 40px;
+      border: 5px solid #333;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: rotate 1s linear infinite;
+    }
+
+    @keyframes rotate {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+
+</head>
+
+<body>
+  <div id="welcome">
+    <span>欢迎来到 By AI Code Review</span>
+    <div class="loading"></div>
+  </div>
+  <iframe id="my-iframe" width="100%" height="100%" loading="lazy"></iframe>
+  </iframe>
+
+  <script>
+    const env = "{env}";
+    const iframeUrl = env === "production" ? "http://127.0.0.1:3000" : "http://localhost:5173";
+    const iframe = document.getElementById('my-iframe');
+    iframe.src = iframeUrl;
+
+    document.getElementById('my-iframe').onload = function () {
+      document.getElementById('welcome').style.display = 'none';
+    };
+
+    /**
+     * IDE send action message to remote web
+     * @param fnCode string
+     * @param fnName string
+     * @param filePath string
+     * @param fileType string
+     * @param action string
+     */
+    const sendActionWithCode = ({ fnCode, fnName, filePath, fileType, action }) => {
+      const message = {
+        code: 10003,
+        data: {
+          fnCode, // 函数代码
+          fnName, // 函数名
+          filePath, // 文件在项目中的相对路径
+          fileType, // 文件语言类型
+          action, // 动作
+        }
+      };
+
+      iframe.contentWindow.postMessage(message, iframeUrl);
+    }
+
+    /**
+     * IDE send functions of file message to remote web
+     * @param data { fnName: string; codes: string; fileType: string; filePath: string?; start: number; end?: number }[]
+     */
+    const sendFileFunctions = (data) => {
+      const message = {
+        code: 10004,
+        data
+      };
+
+      iframe.contentWindow.postMessage(message, iframeUrl);
+    }
+
+    /**
+     * IDE send single function message to remote web
+     * @param fnName
+     * @param fnCode
+     * @param filePath
+     * @param fileType
+     */
+    const sendSingleFunction = ({ fnName, fnCode, filePath, fileType }) => {
+      const message = {
+        code: 10005,
+        data: {
+          fnCode, // 函数代码
+          fnName, // 函数名
+          filePath, // 文件在项目中的相对路径
+          fileType, // 文件语言类型
+        }
+      };
+
+      iframe.contentWindow.postMessage(message, iframeUrl);
+    }
+
+    const sendSelectionCode = ({ codes, start, end, filePath, fileType }) => {
+      const message = {
+        code: 10006,
+        data: {
+          codes, // 函数代码
+          start, // 起始行
+          end, // 结束行
+          filePath,
+          fileType
+        }
+      };
+
+      iframe.contentWindow.postMessage(message, iframeUrl);
+    }
+
+    const sendFileInfo = ({ fileName, filePath, language }) => {
+      const message = {
+        code: 10007,
+        data: {
+          fileName,
+          filePath,
+          language,
+        }
+      }
+
+      iframe.contentWindow.postMessage(message, iframeUrl);
+    }
+
+    window.addEventListener('message', (event) => {
+      const { data, code } = event.data;
+      console.info("Remote Render to IDE, code: ", code, "data: ", event.data);
+
+      if (code === 20001) {
+        if (!window.askFileInfo) {
+          console.error("IDE template log: askFileInfo has not been inject in IDE");
+          return;
+        }
+
+        window.askFileInfo()
+        return;
+      }
+
+      if (code === 20002) {
+        if (!window.triggerDiff) {
+          console.error("IDE template log: triggerDiff has not been inject in IDE");
+          return;
+        }
+
+        if (!data) {
+          console.error("code=20002, data is required");
+          return;
+        }
+
+        try {
+          triggerDiff(JSON.stringify({
+            original: data?.original || "",
+            optimization: data?.optimization || "",
+          }));
+        } catch (e) {
+          console.error("code=20002, stringify error:", e);
+        }
+
+        return;
+      }
+
+      if (code === 20003) {
+        if (!window.askFunctions) {
+          console.error("IDE template log: askFunctions has not been inject in IDE");
+          return;
+        }
+
+        window.askFunctions();
+        return;
+      }
+
+      if (code === 20004) {
+        if (!window.openFile) {
+          console.error("IDE template log: openFile has not been inject in IDE")
+          return;
+        }
+
+        if (!data || !data.filePath) {
+          console.error("IDE template log: data.filePath is required of remote message with code 20005");
+          return;
+        }
+
+        try {
+          window.openFile(JSON.stringify({
+            filePath: data?.filePath || "",
+            start: data?.start || -1,
+          }));
+        } catch (e) {
+          console.error("code=20002, stringify error:", e);
+        }
+
+        return;
+      }
+
+      // if (code === 20006) {
+      //   if (!data) {
+      //     console.log("IDE template log: data is required of remote message with code 20005");
+      //     return;
+      //   }
+      //
+      //   if (!data.fnName) {
+      //     console.log("IDE template log: data.fnName is required of remote message with code 20005");
+      //     return;
+      //   }
+      //
+      //   if (!window?.queryFunction) {
+      //     console.log("IDE template log: queryFunction has not been inject in IDE");
+      //     return;
+      //   }
+      //
+      //   window.queryFunction(data.fnName);
+      //   return;
+      // }
+    });
+  </script>
+</body>
+
+</html>
